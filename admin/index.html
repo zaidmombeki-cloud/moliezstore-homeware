@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="sw">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moliez Store Admin</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #171717;
+    }
+
+    .top {
+      background: #111;
+      color: white;
+      padding: 18px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .top a {
+      color: white;
+      text-decoration: none;
+    }
+
+    .gold {
+      color: #d4a84f;
+    }
+
+    .wrap {
+      max-width: 1050px;
+      margin: auto;
+      padding: 25px 5%;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.08);
+    }
+
+    .number {
+      font-size: 30px;
+      font-weight: 900;
+      color: #b3872c;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    button {
+      border: 0;
+      padding: 11px 15px;
+      border-radius: 9px;
+      background: #c89b3c;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .tabs button.active {
+      background: #111;
+      color: white;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 11px;
+      margin: 5px 0 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      padding: 12px 0;
+    }
+
+    .danger {
+      background: #b83b3b;
+      color: white;
+    }
+
+    .muted {
+      color: #777;
+    }
+
+    @media(max-width:600px) {
+      .top {
+        display: block;
+      }
+
+      .top a {
+        display: inline-block;
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="top">
+    <b>
+      MOLIEZ <span class="gold">STORE</span> • ADMIN
+    </b>
+
+    <a href="../">View Website ↗</a>
+  </div>
+
+  <div class="wrap">
+
+    <h1>Admin Dashboard</h1>
+
+    <p class="muted">
+      Control center ya Moliez Store Homeware.
+    </p>
+
+    <div class="grid">
+
+      <div class="card">
+        <small>Products</small>
+        <div class="number" id="productCount">0</div>
+      </div>
+
+      <div class="card">
+        <small>Orders</small>
+        <div class="number">0</div>
+      </div>
+
+      <div class="card">
+        <small>Messages</small>
+        <div class="number">0</div>
+      </div>
+
+      <div class="card">
+        <small>Offer</small>
+        <div class="number">10%</div>
+        <small>WELCOME10</small>
+      </div>
+
+    </div>
+
+    <div class="tabs">
+
+      <button
+        class="active"
+        onclick="showSection('products', this)">
+        📦 Products
+      </button>
+
+      <button
+        onclick="showSection('orders', this)">
+        🛒 Orders
+      </button>
+
+      <button
+        onclick="showSection('messages', this)">
+        💬 Messages
+      </button>
+
+      <button
+        onclick="showSection('promotion', this)">
+        🎁 Promotion
+      </button>
+
+    </div>
+
+    <div id="products" class="card">
+
+      <h2>Add Product</h2>
+
+      <input
+        id="productName"
+        placeholder="Jina la bidhaa">
+
+      <input
+        id="productPrice"
+        placeholder="Bei, mfano 185000">
+
+      <textarea
+        id="productDescription"
+        placeholder="Maelezo ya bidhaa"></textarea>
+
+      <button onclick="addProduct()">
+        + Save Product
+      </button>
+
+      <hr>
+
+      <div id="productList"></div>
+
+    </div>
+
+    <div
+      id="orders"
+      class="card"
+      style="display:none">
+
+      <h2>Orders</h2>
+
+      <p class="muted">
+        Mfumo wa orders utaunganishwa na database
+        kwenye production backend.
+      </p>
+
+    </div>
+
+    <div
+      id="messages"
+      class="card"
+      style="display:none">
+
+      <h2>Messages</h2>
+
+      <p class="muted">
+        Messages za wateja zitaunganishwa na backend.
+      </p>
+
+    </div>
+
+    <div
+      id="promotion"
+      class="card"
+      style="display:none">
+
+      <h2>Promotion</h2>
+
+      <p>
+        Promotion Code:
+        <b>WELCOME10</b>
+      </p>
+
+      <p>
+        Welcome offer: 10%
+      </p>
+
+    </div>
+
+  </div>
+
+<script>
+
+const STORAGE_KEY = "moliez_products";
+
+function getProducts() {
+
+  return JSON.parse(
+    localStorage.getItem(STORAGE_KEY) || "[]"
+  );
+
+}
+
+function saveProducts(products) {
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(products)
+  );
+
+}
+
+function escapeHTML(value) {
+
+  return String(value).replace(
+    /[&<>"']/g,
+    function(character) {
+
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[character];
+
+    }
+  );
+
+}
+
+function renderProducts() {
+
+  const products = getProducts();
+
+  document.getElementById(
+    "productCount"
+  ).textContent = products.length;
+
+  const list =
+    document.getElementById("productList");
+
+  if (!products.length) {
+
+    list.innerHTML =
+      '<p class="muted">Bado hakuna bidhaa.</p>';
+
+    return;
+
+  }
+
+  list.innerHTML = products.map(
+    function(product, index) {
+
+      return `
+        <div class="row">
+
+          <span>
+            <b>${escapeHTML(product.name)}</b>
+            <br>
+            <small>
+              TSh ${escapeHTML(product.price)}
+              —
+              ${escapeHTML(product.description)}
+            </small>
+          </span>
+
+          <button
+            class="danger"
+            onclick="deleteProduct(${index})">
+            Delete
+          </button>
+
+        </div>
+      `;
+
+    }
+  ).join("");
+
+}
+
+function addProduct() {
+
+  const name =
+    document.getElementById("productName")
+      .value.trim();
+
+  const price =
+    document.getElementById("productPrice")
+      .value.trim();
+
+  const description =
+    document.getElementById("productDescription")
+      .value.trim();
+
+  if (!name) {
+
+    alert("Weka jina la bidhaa.");
+
+    return;
+
+  }
+
+  const products = getProducts();
+
+  products.push({
+    name: name,
+    price: price,
+    description: description
+  });
+
+  saveProducts(products);
+
+  document.getElementById(
+    "productName"
+  ).value = "";
+
+  document.getElementById(
+    "productPrice"
+  ).value = "";
+
+  document.getElementById(
+    "productDescription"
+  ).value = "";
+
+  renderProducts();
+
+}
+
+function deleteProduct(index) {
+
+  const products = getProducts();
+
+  products.splice(index, 1);
+
+  saveProducts(products);
+
+  renderProducts();
+
+}
+
+function showSection(sectionId, button) {
+
+  document.querySelectorAll(
+    ".card[id]"
+  ).forEach(function(section) {
+
+    section.style.display = "none";
+
+  });
+
+  document.getElementById(
+    sectionId
+  ).style.display = "block";
+
+  document.querySelectorAll(
+    ".tabs button"
+  ).forEach(function(btn) {
+
+    btn.classList.remove("active");
+
+  });
+
+  button.classList.add("active");
+
+}
+
+renderProducts();
+
+</script>
+
+</body>
+</html>
